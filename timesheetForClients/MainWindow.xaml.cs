@@ -69,7 +69,7 @@ namespace timesheetForClients
                         colorResultHeaderB = XLColor.FromColor(worksheet.Cell("O10").Style.Fill.BackgroundColor.Color);
                         colorResultB = XLColor.FromColor(worksheet.Cell("O13").Style.Fill.BackgroundColor.Color);
                         //MessageBox.Show(colorHeaderB);
-                        for (int row = 1; row <= rowCount; row++)
+                        for (int row = 14; row <= rowCount; row++)
                         {
                             var cellValue = worksheet.Cell(row, 15).GetString(); 
                             if (!string.IsNullOrEmpty(cellValue) && cellValue.Trim() == dateStart.Trim())
@@ -109,7 +109,8 @@ namespace timesheetForClients
                         for (int row = 1; row <= rowCount; row++)
                         {
                             var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
-                            if (uniqueProjects.Contains(projectNameCell))
+                            //var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
+                            if (uniqueProjects.Contains(projectNameCell) && projectNameCell != "")
                                 copyTaskRow(projectNameCell, worksheet, row); // копирование найденной задачи
                         }
                     }
