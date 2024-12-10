@@ -17,6 +17,7 @@ using ClosedXML.Excel;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace timesheetForClients
 {
@@ -107,12 +108,14 @@ namespace timesheetForClients
                     using (var workbook = new XLWorkbook(file))
                     {
                         var worksheet = workbook.Worksheet(1);
-                        int rowCount = worksheet.LastRowUsed().RowNumber();
-                        for (int row = startWeek; row <= rowCount; row++)
+                        int rowCount = startWeek+4;
+                        while (!string.IsNullOrEmpty(worksheet.Cell(rowCount, 3).GetString()))
+                            rowCount+=2;
+                        MessageBox.Show(startWeek + " " + rowCount);
+                        for (int row = startWeek; row < rowCount; row++)
                         {
-                            var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
-                            var projectTaskCell = worksheet.Cell(row, 4).GetString().Trim(); 
-                            if (uniqueProjects.Contains(projectNameCell) && projectTaskCell != worksheet.Cell("D14").GetString().Trim())
+                            var projectNameCell = worksheet.Cell(row, 3).GetString().Trim();
+                            if (!string.IsNullOrEmpty(projectNameCell) && uniqueProjects.Contains(projectNameCell))
                                 copyTaskRow(projectNameCell, worksheet, row); // копирование найденной задачи
                         }
                     }
