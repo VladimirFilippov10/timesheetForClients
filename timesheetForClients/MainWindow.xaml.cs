@@ -84,7 +84,10 @@ namespace timesheetForClients
 
                         if (startRow != -1) 
                         {
-                            for (int row = startRow + 1; row <= rowCount; row++) 
+                            int rowCountForProject = startWeek + 4;
+                            while (!string.IsNullOrEmpty(worksheet.Cell(rowCountForProject, 3).GetString()))
+                                rowCountForProject += 2;
+                            for (int row = startRow + 1; row <= rowCountForProject; row++) 
                             {
                                 var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
                                 if (!string.IsNullOrEmpty(projectNameCell) && !projectNameCell.Equals("ПРОЕКТ", StringComparison.OrdinalIgnoreCase))
@@ -111,7 +114,7 @@ namespace timesheetForClients
                         int rowCount = startWeek+4;
                         while (!string.IsNullOrEmpty(worksheet.Cell(rowCount, 3).GetString()))
                             rowCount+=2;
-                        MessageBox.Show(startWeek + " " + rowCount);
+                       // MessageBox.Show(startWeek + " " + rowCount);
                         for (int row = startWeek; row < rowCount; row++)
                         {
                             var projectNameCell = worksheet.Cell(row, 3).GetString().Trim();
