@@ -109,8 +109,8 @@ namespace timesheetForClients
                         for (int row = 1; row <= rowCount; row++)
                         {
                             var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
-                            //var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
-                            if (uniqueProjects.Contains(projectNameCell) && projectNameCell != "")
+                            var projectTaskCell = worksheet.Cell(row, 4).GetString().Trim(); 
+                            if (uniqueProjects.Contains(projectNameCell) && projectTaskCell != worksheet.Cell("D14").GetString().Trim())
                                 copyTaskRow(projectNameCell, worksheet, row); // копирование найденной задачи
                         }
                     }
