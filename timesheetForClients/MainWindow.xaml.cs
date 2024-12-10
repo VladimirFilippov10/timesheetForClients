@@ -54,7 +54,7 @@ namespace timesheetForClients
             {
                 var files = Directory.GetFiles(selectedFolder, "*employee*.xlsm").ToList(); // получение всех файлов работников
                 HashSet<string> uniqueProjects = new HashSet<string>(); // список проектов
-
+                int startWeek = 1;
                 // Сбор уникальных проектов
                 foreach (var file in files)
                 {
@@ -63,6 +63,7 @@ namespace timesheetForClients
                         var worksheet = workbook.Worksheet(1); // Получаем первый лист
                         int rowCount = worksheet.LastRowUsed().RowNumber(); // Получаем количество строк
                         int startRow = -1;
+                        //int weekStart = 1;
                         // получение стилей
                         colorHeaderB = XLColor.FromColor(worksheet.Cell("C10").Style.Fill.BackgroundColor.Color);
                         colorDayB = XLColor.FromColor(worksheet.Cell("C14").Style.Fill.BackgroundColor.Color);
@@ -74,7 +75,8 @@ namespace timesheetForClients
                             var cellValue = worksheet.Cell(row, 15).GetString(); 
                             if (!string.IsNullOrEmpty(cellValue) && cellValue.Trim() == dateStart.Trim())
                             {
-                                startRow = row; 
+                                startRow = row;
+                                startWeek = row;
                                 break; 
                             }
                         }
@@ -106,7 +108,7 @@ namespace timesheetForClients
                     {
                         var worksheet = workbook.Worksheet(1);
                         int rowCount = worksheet.LastRowUsed().RowNumber();
-                        for (int row = 1; row <= rowCount; row++)
+                        for (int row = startWeek; row <= rowCount; row++)
                         {
                             var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
                             var projectTaskCell = worksheet.Cell(row, 4).GetString().Trim(); 
