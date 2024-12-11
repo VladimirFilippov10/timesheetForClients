@@ -57,77 +57,88 @@ namespace timesheetForClients
                 HashSet<string> uniqueProjects = new HashSet<string>(); // список проектов
                 int startWeek = 1;
                 // Сбор уникальных проектов
-                foreach (var file in files)
+                if (files.Count != 0) // если нет файлов
                 {
-                    using (var workbook = new XLWorkbook(file))
-                    {
-                        var worksheet = workbook.Worksheet(1); // Получаем первый лист
-                        int rowCount = worksheet.LastRowUsed().RowNumber(); // Получаем количество строк
-                        int startRow = -1;
-                        //int weekStart = 1;
-                        // получение стилей
-                        colorHeaderB = XLColor.FromColor(worksheet.Cell("C10").Style.Fill.BackgroundColor.Color);
-                        colorDayB = XLColor.FromColor(worksheet.Cell("C14").Style.Fill.BackgroundColor.Color);
-                        colorResultHeaderB = XLColor.FromColor(worksheet.Cell("O10").Style.Fill.BackgroundColor.Color);
-                        colorResultB = XLColor.FromColor(worksheet.Cell("O13").Style.Fill.BackgroundColor.Color);
-                        //MessageBox.Show(colorHeaderB);
-                        for (int row = 14; row <= rowCount; row++)
-                        {
-                            var cellValue = worksheet.Cell(row, 15).GetString(); 
-                            if (!string.IsNullOrEmpty(cellValue) && cellValue.Trim() == dateStart.Trim())
-                            {
-                                startRow = row;
-                                startWeek = row;
-                                break; 
-                            }
-                        }
 
-                        if (startRow != -1) 
+                    foreach (var file in files)
+                    {
+
+                        using (var workbook = new XLWorkbook(file))
                         {
-                            int rowCountForProject = startWeek + 4;
-                            while (!string.IsNullOrEmpty(worksheet.Cell(rowCountForProject, 3).GetString()))
-                                rowCountForProject += 2;
-                            for (int row = startRow + 1; row <= rowCountForProject; row++) 
+                            var worksheet = workbook.Worksheet(1); // Получаем первый лист
+                            int rowCount = worksheet.LastRowUsed().RowNumber(); // Получаем количество строк
+                            int startRow = -1;
+                            //int weekStart = 1;
+                            // получение стилей
+                            colorHeaderB = XLColor.FromColor(worksheet.Cell("C10").Style.Fill.BackgroundColor.Color);
+                            colorDayB = XLColor.FromColor(worksheet.Cell("C14").Style.Fill.BackgroundColor.Color);
+                            colorResultHeaderB = XLColor.FromColor(worksheet.Cell("O10").Style.Fill.BackgroundColor.Color);
+                            colorResultB = XLColor.FromColor(worksheet.Cell("O13").Style.Fill.BackgroundColor.Color);
+                            //MessageBox.Show(colorHeaderB);
+                            for (int row = 14; row <= rowCount; row++)
                             {
-                                var projectNameCell = worksheet.Cell(row, 3).GetString().Trim(); 
-                                if (!string.IsNullOrEmpty(projectNameCell) && !projectNameCell.Equals("ПРОЕКТ", StringComparison.OrdinalIgnoreCase))
-                                    uniqueProjects.Add(projectNameCell); // добавление проекта в список если он уникален
+                                var cellValue = worksheet.Cell(row, 15).GetString();
+                                if (!string.IsNullOrEmpty(cellValue) && cellValue.Trim() == dateStart.Trim())
+                                {
+                                    startRow = row;
+                                    startWeek = row;
+                                    break;
+                                }
+                            }
+
+                            if (startRow != -1)
+                            {
+                                int rowCountForProject = startWeek + 4;
+                                while (!string.IsNullOrEmpty(worksheet.Cell(rowCountForProject, 3).GetString()))
+                                    rowCountForProject += 2;
+                                for (int row = startRow + 1; row <= rowCountForProject; row++)
+                                {
+                                    var projectNameCell = worksheet.Cell(row, 3).GetString().Trim();
+                                    if (!string.IsNullOrEmpty(projectNameCell) && !projectNameCell.Equals("ПРОЕКТ", StringComparison.OrdinalIgnoreCase))
+                                        uniqueProjects.Add(projectNameCell); // добавление проекта в список если он уникален
+                                }
+
                             }
                         }
                     }
-                }
-
-                // Создание отчётов по проектам 
-                foreach (var projectName in uniqueProjects)
-                {
-                    string newFileName = System.IO.Path.Combine(selectedFolder, $"timesheet_customer_{projectName}.xlsx");
-                    if (!File.Exists(newFileName))
-                        createTimesheet(newFileName, projectName, dateStart);
-                }
-
-                // копирование задач
-                foreach (var file in files)
-                {
-                    using (var workbook = new XLWorkbook(file))
+                    if (uniqueProjects.Count == 0)
+                        MessageBox.Show("Нет добавленных проектов");
+                    // Создание отчётов по проектам 
+                    foreach (var projectName in uniqueProjects)
                     {
-                        var worksheet = workbook.Worksheet(1);
-                        int rowCount = startWeek+4;
-                        while (!string.IsNullOrEmpty(worksheet.Cell(rowCount, 3).GetString()))
-                            rowCount+=2;
-                       // MessageBox.Show(startWeek + " " + rowCount);
-                        for (int row = startWeek; row < rowCount; row++)
+                        string newFileName = System.IO.Path.Combine(selectedFolder, $"timesheet_customer_{projectName}.xlsx");
+                        if (!File.Exists(newFileName))
+                            createTimesheet(newFileName, projectName, dateStart);
+                    }
+
+                    // копирование задач
+                    foreach (var file in files)
+                    {
+                        using (var workbook = new XLWorkbook(file))
                         {
-                            var projectNameCell = worksheet.Cell(row, 3).GetString().Trim();
-                            if (!string.IsNullOrEmpty(projectNameCell) && uniqueProjects.Contains(projectNameCell))
-                                copyTaskRow(projectNameCell, worksheet, row); // копирование найденной задачи
+                            var worksheet = workbook.Worksheet(1);
+                            int rowCount = startWeek + 4;
+                            while (!string.IsNullOrEmpty(worksheet.Cell(rowCount, 3).GetString()))
+                                rowCount += 2;
+                            // MessageBox.Show(startWeek + " " + rowCount);
+                            for (int row = startWeek; row < rowCount; row++)
+                            {
+                                var projectNameCell = worksheet.Cell(row, 3).GetString().Trim();
+                                if (!string.IsNullOrEmpty(projectNameCell) && uniqueProjects.Contains(projectNameCell))
+                                    copyTaskRow(projectNameCell, worksheet, row); // копирование найденной задачи
+                            }
                         }
                     }
+                    foreach (var projectName in uniqueProjects) // формирование итогов и стилей
+                    {
+                        formingTheResults(projectName);
+                    }
                 }
-                foreach (var projectName in uniqueProjects) // формирование итогов и стилей
-                {
-                    formingTheResults(projectName);
-                }
+                else
+                    MessageBox.Show("Нет файлов для выгрузки");
             }
+            else
+                MessageBox.Show("Не выбрана дата или каталог");
         }
         private void createTimesheet(string filePath, string projectName, string dateStart)
         {
